@@ -1,0 +1,25 @@
+{% extends 'base.html' %} {% block content %} <div class="container mt-5">
+    <h1 class="text-center mb-4">Our Team Members</h1>
+    <div class="row"> {% for profile in user_data %}     
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card shadow p-4 h-100">
+                <img src="{{ profile.image.url }}" alt="Profile Image" class="rounded-circle mx-auto d-block" width="150" height="150" style="object-fit: cover;">
+                <h3 class="text-primary text-center mt-3">{{ profile.name }}</h3>
+                <hr>
+                <div class="text-center mb-3">
+                    <a href="{% url 'detail' profile.id %}" class="btn btn-outline-primary btn-sm">View Full Profile</a>
+                </div>
+                <p><strong>Age:</strong> {{ profile.age }}</p>
+                <p><strong>Job:</strong> {{ profile.job }}</p>
+                <p><strong>Email:</strong> {{ profile.email }}</p>
+                <div class="alert alert-info">
+                    <strong>Bio:</strong> {{ profile.bio|truncatechars:100 }}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+            <p class="text-center">No profiles found.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow p-5">
+        <div class="row align-items-center">
+            <div class="col-md-4 text-center">
+                <img alt="Profile Image" src="{{ profile.image.url }}" class="rounded-circle img-fluid shadow" style="width: 250px; height: 250px; object-fit: cover;">
+            </div>
+            <div class="col-md-8">
+                <h1 class="display-4">{{ profile.name }}</h1>
+                <p class="lead text-muted">{{ profile.job }}</p>
+                <hr>
+                <p><strong>Age:</strong> {{ profile.age }}</p>
+                <p><strong>Email:</strong> {{ profile.email }}</p>
+                <p><strong>Couple:</strong> {{ profile.couple }}</p>
+                <div class="mt-4">
+                    <h5>Biography:</h5>
+                    <p class="text-secondary">{{ profile.bio }}</p>
+                </div>
+                <a href="/" class="btn btn-secondary mt-3">Back to Home</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
