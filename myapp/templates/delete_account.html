@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container fade-in">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="mb-4">
+                <a href="{% url 'settings' %}" class="text-decoration-none text-primary">
+                    <i class="bi bi-chevron-left"></i> Settings
+                </a>
+            </div>
+
+            <div class="text-center mb-4">
+                <div class="bg-danger bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                    <i class="bi bi-exclamation-triangle-fill text-danger fs-1"></i>
+                </div>
+                <h4 class="fw-bold">Delete Account?</h4>
+                <p class="text-secondary small">This action is permanent. All your posts, messages, and profile data will be lost forever.</p>
+            </div>
+
+            <div class="card border-0 shadow-sm" style="border-radius: 16px; background: var(--ios-card-bg);">
+                <div class="card-body p-4">
+                    <form method="POST">
+                        {% csrf_token %}
+
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold text-secondary">Confirm Password</label>
+                            <input type="password" name="password" class="form-control border-0 bg-light"
+                                   style="border-radius: 10px; padding: 12px;"
+                                   placeholder="Enter your password to confirm" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-danger w-100 fw-bold py-3 mb-3" style="border-radius: 12px;">
+                            Permanently Delete Account
+                        </button>
+
+                        <a href="{% url 'settings' %}" class="btn btn-light w-100 fw-bold py-3 border-0"
+                           style="border-radius: 12px; background: var(--ios-bg);">
+                            Cancel
+                        </a>
+                    </form>
+                </div>
+            </div>
+
+            <div class="mt-4 text-center">
+                <p class="small text-secondary">We're sorry to see you go, <b>{{ user.username }}</b>.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Dark Mode input adjustments */
+    [data-bs-theme="dark"] .bg-light {
+        background-color: #2c2c2e !important;
+        color: white;
+    }
+    [data-bs-theme="dark"] .btn-light {
+        background-color: #1c1c1e !important;
+        color: #8E8E93;
+    }
+</style>
+{% endblock %}

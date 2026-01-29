@@ -1,0 +1,163 @@
+/* --- Story Container (Home Page) --- */
+.story-container {
+    display: flex;
+    gap: 15px;
+    padding: 15px 10px;
+    overflow-x: auto;
+    scrollbar-width: none; /* Firefox */
+    background: transparent;
+    -ms-overflow-style: none; /* IE and Edge */
+}
+
+.story-container::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+}
+
+.story-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    min-width: 75px;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.story-item:active {
+    transform: scale(0.92); /* နှိပ်လိုက်ရင် ချုံ့သွားတဲ့ effect */
+}
+
+/* Home Page က Story ဝိုင်းလေး */
+.story-img-wrapper {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    padding: 2.5px;
+    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+    margin-bottom: 5px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.story-img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--ios-card-bg, #fff); /* Background နဲ့ လိုက်ဖက်အောင် */
+}
+
+/* --- Story Viewer (Full Screen Overlay) --- */
+.story-viewer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000; /* Full Black for focus */
+    z-index: 10000;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* ပုံအပြည့်ပြသရန် */
+.story-content-full {
+    max-width: 100%;
+    max-height: 100vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    z-index: 10001;
+}
+
+/* --- Progress Bars (Top) --- */
+.story-progress-container {
+    position: absolute;
+    top: 15px; /* iOS Status bar နဲ့ လွတ်အောင် */
+    width: 96%;
+    display: flex;
+    gap: 4px;
+    z-index: 10005;
+    padding: 0 10px;
+}
+
+.progress-bar {
+    height: 2px;
+    flex-grow: 1;
+    background: rgba(255, 255, 255, 0.35);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    width: 0%;
+    background: #fff;
+    border-radius: 10px;
+}
+
+/* --- Caption Style --- */
+.story-caption {
+    position: absolute;
+    bottom: 50px;
+    width: 90%;
+    max-width: 500px;
+    text-align: center;
+    color: white;
+    font-size: 15px;
+    padding: 15px;
+    background: linear-gradient(transparent, rgba(0,0,0,0.7)); /* အောက်ခြေစာသား ဖတ်ရလွယ်အောင် */
+    z-index: 10003;
+}
+
+/* --- Top Controls (User info & close) --- */
+.story-viewer-top {
+    position: absolute;
+    top: 35px;
+    width: 100%;
+    padding: 0 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 10006;
+}
+
+.story-close {
+    color: white;
+    font-size: 32px;
+    cursor: pointer;
+    padding: 10px;
+    line-height: 1;
+    text-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+/* --- Delete Button (...) Style --- */
+.story-menu-btn {
+    color: white;
+    font-size: 22px;
+    cursor: pointer;
+    padding: 10px;
+    text-shadow: 0 0 5px rgba(0,0,0,0.5);
+}
+
+/* --- Animations --- */
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(1.1); } /* Zoom in effect */
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* Mobile Responsive Tweaks */
+@media (max-width: 576px) {
+    .story-content-full {
+        width: 100%;
+        height: 100%;
+        object-fit: cover; /* ဖုန်းမှာ Screen အပြည့်ပြရန် */
+    }
+    .story-progress-container {
+        top: 20px;
+    }
+}

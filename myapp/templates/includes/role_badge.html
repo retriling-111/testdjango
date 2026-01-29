@@ -1,0 +1,16 @@
+{% if user_profile.role == 'developer' %}
+    <span class="ms-1" style="position: relative; display: inline-block; width: 14px; height: 14px; vertical-align: middle;" title="Developer">
+        <i class="fas fa-certificate text-primary" style="font-size: 14px; position: absolute;"></i>
+        <i class="fas fa-check" style="position: absolute; color: white; font-size: 7px; top: 50%; left: 50%; transform: translate(-50%, -50%);"></i>
+    </span>
+
+{% elif user_profile.role == 'app_inspector' %}
+    <i class="fas fa-shield-halved ms-1" style="color: #007AFF; font-size: 13px;" title="App Inspector"></i>
+
+{% elif user_profile.role == 'creator' %}
+    <i class="fas fa-circle-check ms-1 mark-creator-icon" style="font-size: 13px;" title="Creator"></i>
+    <style>
+        .mark-creator-icon { color: #000000; }
+        [data-bs-theme="dark"] .mark-creator-icon { color: #ffffff; }
+    </style>
+{% endif %}

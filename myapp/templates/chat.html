@@ -1,0 +1,406 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+<style>
+    :root {
+        --ios-bg: #ffffff;
+        --ios-header: rgba(255, 255, 255, 0.85);
+        --ios-text: #000000;
+        --ios-bubble-sent: #007aff;
+        --ios-bubble-received: #e9e9eb;
+        --ios-bubble-text-received: #000000;
+        --ios-bubble-text-sent: #ffffff;
+        --ios-input-bg: #f2f2f7;
+        --ios-border: #d1d1d6;
+        --ios-status: #8e8e93;
+    }
+
+    [data-bs-theme="dark"], body.dark-mode {
+        --ios-bg: #000000;
+        --ios-header: rgba(28, 28, 30, 0.9);
+        --ios-text: #ffffff;
+        --ios-bubble-sent: #0a84ff;
+        --ios-bubble-received: #1c1c1e;
+        --ios-bubble-text-received: #ffffff;
+        --ios-bubble-text-sent: #ffffff;
+        --ios-input-bg: #1c1c1e;
+        --ios-border: #38383a;
+        --ios-status: #98989d;
+    }
+
+    /* 🛡️ FORCE HIDE ALL GLOBAL NAV/FOOTERS */
+    nav, .navbar, footer, .footer, .bottom-nav, aside {
+        display: none !important;
+    }
+
+    /* Layout Reset */
+    html, body {
+        margin: 0 !important;
+        padding: 0 !important;
+        height: 100vh;
+        height: -webkit-fill-available;
+        background-color: var(--ios-bg) !important;
+        overflow: hidden !important;
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+    }
+
+    .app-viewport {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        height: 100dvh; /* For Mobile dynamic viewport */
+        max-width: 600px;
+        margin: 0 auto;
+        position: relative;
+        background-color: var(--ios-bg);
+    }
+
+    /* FIXED HEADER */
+    .custom-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        max-width: 600px;
+        margin: 0 auto;
+        height: 60px;
+        z-index: 2000;
+        background: var(--ios-header);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-bottom: 0.5px solid var(--ios-border);
+        display: flex;
+        align-items: center;
+        padding: 0 12px;
+        justify-content: space-between;
+    }
+
+    /* SCROLLABLE CHAT AREA */
+    #chat-box {
+        flex: 1;
+        overflow-y: auto;
+        padding: 75px 14px 140px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* MESSAGE BUBBLES */
+    .bubble-wrapper { display: flex; flex-direction: column; width: 100%; }
+    .bubble {
+        max-width: 78%;
+        padding: 10px 15px;
+        border-radius: 18px;
+        font-size: 15px;
+        position: relative;
+        line-height: 1.4;
+        word-wrap: break-word;
+    }
+    .sent { align-self: flex-end; background: var(--ios-bubble-sent); color: #fff; border-bottom-right-radius: 4px; }
+    .received { align-self: flex-start; background: var(--ios-bubble-received); color: var(--ios-bubble-text-received); border-bottom-left-radius: 4px; }
+
+    /* IMAGE PREVIEW CARD */
+    #image-preview-container {
+        display: none; padding: 10px; margin: 0 12px;
+        background: var(--ios-input-bg);
+        border-radius: 15px 15px 0 0;
+        border: 0.5px solid var(--ios-border);
+        position: relative;
+    }
+    #preview-img { width: 65px; height: 65px; object-fit: cover; border-radius: 10px; }
+    .remove-preview { position: absolute; top: 2px; left: 70px; color: #ff3b30; cursor: pointer; font-size: 18px; }
+
+    /* INPUT BAR */
+    .input-container {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 8px 10px 30px 10px; /* Safe area for iOS */
+        background: var(--ios-header);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-top: 0.5px solid var(--ios-border);
+        z-index: 2000;
+    }
+    .telegram-input-bar {
+        background: var(--ios-input-bg);
+        border-radius: 22px;
+        display: flex;
+        align-items: center;
+        padding: 2px 10px;
+        border: 0.5px solid var(--ios-border);
+    }
+    .telegram-input-bar input[type="text"] {
+        flex: 1;
+        background: transparent;
+        border: none;
+        color: var(--ios-text);
+        padding: 10px 8px;
+        outline: none;
+        font-size: 16px;
+    }
+
+    /* CONTEXT MENU */
+    .msg-menu {
+        display: none; position: fixed; background: var(--ios-header);
+        border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        z-index: 3000; min-width: 170px; border: 0.5px solid var(--ios-border);
+        backdrop-filter: blur(25px); overflow: hidden;
+    }
+    .msg-menu button {
+        width: 100%; border: none; background: none; padding: 12px 16px;
+        text-align: left; color: var(--ios-text); font-size: 15px;
+        display: flex; align-items: center; justify-content: space-between;
+    }
+    .msg-menu button:not(:last-child) { border-bottom: 0.5px solid var(--ios-border); }
+
+    .reply-preview-tag {
+        font-size: 12px; padding: 6px 12px; margin-bottom: 2px;
+        background: var(--ios-input-bg); border-radius: 15px 15px 0 0;
+        border-left: 4px solid var(--ios-bubble-sent);
+    }
+
+    .msg-image {
+        max-width: 100%;
+        border-radius: 12px;
+        margin-bottom: 5px;
+        display: block;
+    }
+</style>
+
+<div class="app-viewport">
+    <header class="custom-header">
+        <div class="d-flex align-items-center">
+            <a href="{% url 'chat_list' %}" class="text-decoration-none" style="color: #007aff;">
+                <i class="bi bi-chevron-left fs-4 fw-bold"></i>
+            </a>
+            <a href="{% url 'profile_view' receiver.username %}" class="d-flex align-items-center text-decoration-none ms-2">
+                <img src="{{ receiver.profile.profile_pic.url }}" width="38" height="38" class="rounded-circle" style="object-fit: cover; border: 0.5px solid var(--ios-border);">
+                <div class="ms-2">
+                    <div class="fw-bold" style="font-size: 15px; color: var(--ios-text); line-height: 1.1;">{{ receiver.username }}</div>
+                    <small id="user-status" style="color: var(--ios-status); font-size: 11px;">Offline</small>
+                </div>
+            </a>
+        </div>
+        <i class="bi bi-info-circle fs-5" style="color: #007aff; cursor: pointer;"></i>
+    </header>
+
+    <div id="chat-box"></div>
+
+    <div class="input-container">
+        <div id="reply-preview" style="display:none;" class="reply-preview-tag">
+            <div class="d-flex justify-content-between align-items-center">
+                <span id="reply-text" style="opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 11px;">Replying...</span>
+                <i class="bi bi-x-circle-fill text-secondary" onclick="cancelActions()" style="cursor:pointer;"></i>
+            </div>
+        </div>
+
+        <div id="image-preview-container">
+            <img id="preview-img" src="">
+            <i class="bi bi-x-circle-fill remove-preview" onclick="clearImage()"></i>
+        </div>
+
+        <form id="chat-form" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="telegram-input-bar">
+                <button type="button" class="btn text-primary p-1" onclick="document.getElementById('image-input').click()">
+                    <i class="bi bi-plus fs-2"></i>
+                </button>
+                <input type="file" id="image-input" name="image" hidden accept="image/*" onchange="previewImage(this)">
+
+                <input type="text" id="chat-input" name="content" placeholder="iMessage" autocomplete="off">
+                <input type="hidden" id="reply-id" name="parent_id">
+
+                <button type="submit" class="btn text-primary p-1" id="send-btn">
+                    <i class="bi bi-arrow-up-circle-fill fs-2"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="context-menu" class="msg-menu">
+    <button onclick="copyMsg()">Copy <i class="bi bi-clipboard"></i></button>
+    <button onclick="replyMsg()">Reply <i class="bi bi-reply"></i></button>
+    <button id="edit-btn" onclick="editMsg()">Edit <i class="bi bi-pencil"></i></button>
+    <button id="del-btn" onclick="deleteMsg()" class="text-danger">Delete <i class="bi bi-trash"></i></button>
+</div>
+
+<script>
+    let selectedId = null;
+    let selectedText = "";
+    let isEditing = false;
+
+    // 🕒 Fix Timezone: Convert server UTC to local time
+    function formatTime(timestamp) {
+        if(!timestamp) return "";
+        const date = new Date(timestamp);
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+    }
+
+    async function loadMessages() {
+        try {
+            const res = await fetch("{% url 'get_messages' receiver.username %}");
+            if (!res.ok) return;
+            const data = await res.json();
+
+            document.getElementById('user-status').innerText = data.is_online ? "Online" : "Offline";
+            document.getElementById('user-status').style.color = data.is_online ? "#34C759" : "var(--ios-status)";
+
+            const chatBox = document.getElementById('chat-box');
+            let html = '';
+
+            data.messages.forEach(msg => {
+                const isMe = msg.sender === data.me;
+                const replyHtml = msg.parent_content ? `<div style="font-size:11px; opacity:0.7; border-left:2px solid ${isMe ? '#fff':'#007aff'}; padding-left:6px; margin-bottom:4px; font-style: italic;">${msg.parent_content}</div>` : '';
+                const imgHtml = msg.image ? `<img src="${msg.image}" class="msg-image" onclick="window.open('${msg.image}')">` : '';
+
+                html += `
+                    <div class="bubble-wrapper">
+                        <div class="bubble ${isMe ? 'sent' : 'received'}"
+                             oncontextmenu="showMenu(event, ${msg.id}, '${msg.content.replace(/'/g, "\\'")}', ${isMe})">
+                            ${replyHtml}
+                            ${imgHtml}
+                            <div class="text-content">${msg.content}</div>
+                            <small style="font-size:9px; opacity:0.6; display:block; text-align:right; margin-top:2px;">
+                                ${formatTime(msg.timestamp_iso || msg.timestamp)} ${msg.is_read && isMe ? '<i class="bi bi-check2-all"></i>' : ''}
+                            </small>
+                        </div>
+                    </div>`;
+            });
+
+            if (chatBox.innerHTML !== html) {
+                const isAtBottom = chatBox.scrollHeight - chatBox.scrollTop <= chatBox.clientHeight + 200;
+                chatBox.innerHTML = html;
+                if (isAtBottom) {
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                }
+            }
+        } catch (e) { console.error("Sync error:", e); }
+    }
+
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('preview-img').src = e.target.result;
+                document.getElementById('image-preview-container').style.display = 'block';
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function clearImage() {
+        document.getElementById('image-input').value = "";
+        document.getElementById('image-preview-container').style.display = 'none';
+    }
+
+    function showMenu(e, id, text, isMe) {
+        e.preventDefault();
+        selectedId = id;
+        selectedText = text;
+        const menu = document.getElementById('context-menu');
+        menu.style.display = 'block';
+
+        let x = e.clientX;
+        let y = e.clientY;
+        if (x + 160 > window.innerWidth) x -= 160;
+        if (y + 180 > window.innerHeight) y -= 180;
+
+        menu.style.top = `${y}px`;
+        menu.style.left = `${x}px`;
+
+        document.getElementById('edit-btn').style.display = isMe ? 'flex' : 'none';
+        document.getElementById('del-btn').style.display = isMe ? 'flex' : 'none';
+
+        const close = () => { menu.style.display = 'none'; document.removeEventListener('click', close); };
+        setTimeout(() => document.addEventListener('click', close), 50);
+    }
+
+    function copyMsg() { navigator.clipboard.writeText(selectedText); }
+
+    function replyMsg() {
+        isEditing = false;
+        document.getElementById('reply-id').value = selectedId;
+        document.getElementById('reply-preview').style.display = 'block';
+        document.getElementById('reply-text').innerText = `Replying: "${selectedText.substring(0,25)}..."`;
+        document.getElementById('chat-input').focus();
+    }
+
+    function editMsg() {
+        isEditing = true;
+        document.getElementById('chat-input').value = selectedText;
+        document.getElementById('reply-preview').style.display = 'block';
+        document.getElementById('reply-text').innerText = `Editing Message...`;
+        document.getElementById('chat-input').focus();
+    }
+
+    function cancelActions() {
+        isEditing = false;
+        selectedId = null;
+        document.getElementById('reply-id').value = '';
+        document.getElementById('chat-input').value = '';
+        document.getElementById('reply-preview').style.display = 'none';
+    }
+
+    async function deleteMsg() {
+        if(confirm("Delete this message?")) {
+            const res = await fetch(`/chat/delete_message/${selectedId}/`, {
+                method: 'POST',
+                headers: {'X-CSRFToken': '{{ csrf_token }}'}
+            });
+            if(res.ok) loadMessages();
+        }
+    }
+
+    document.getElementById('chat-form').onsubmit = async (e) => {
+        e.preventDefault();
+        const contentInput = document.getElementById('chat-input');
+        const content = contentInput.value.trim();
+        const hasFile = document.getElementById('image-input').files.length > 0;
+
+        if (!content && !hasFile) return;
+
+        const formData = new FormData(e.target);
+        const url = isEditing ? `/chat/edit_message/${selectedId}/` : "{% url 'send_message' receiver.username %}";
+
+        const res = await fetch(url, {
+            method: 'POST',
+            body: formData,
+            headers: {'X-CSRFToken': '{{ csrf_token }}'}
+        });
+
+        if (res.ok) {
+            contentInput.value = '';
+            document.getElementById('image-input').value = '';
+            cancelActions();
+            clearImage();
+            loadMessages();
+            setTimeout(() => {
+                const chatBox = document.getElementById('chat-box');
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }, 100);
+        }
+    };
+
+    setInterval(loadMessages, 3000);
+    loadMessages();
+
+    // Initial scroll
+    window.onload = () => {
+        setTimeout(() => {
+            const chatBox = document.getElementById('chat-box');
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }, 500);
+    };
+</script>
+{% endblock %}

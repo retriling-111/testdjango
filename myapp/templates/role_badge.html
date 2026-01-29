@@ -1,0 +1,9 @@
+{% if user_profile.role == 'developer' %}
+    <i class="bi bi-patch-check-fill ms-1" style="color: #007bff; font-size: 1.1rem; vertical-align: middle;" title="Developer"></i>
+
+{% elif user_profile.role == 'app inspector' %}
+    <i class="bi bi-shield-check-fill ms-1" style="color: #17a2b8; font-size: 1.1rem; vertical-align: middle;" title="App Inspector"></i>
+
+{% elif user_profile.role == 'creator' %}
+    <i class="bi bi-patch-check-fill ms-1 creator-mark" style="font-size: 1.1rem; vertical-align: middle;" title="Creator"></i>
+{% endif %}

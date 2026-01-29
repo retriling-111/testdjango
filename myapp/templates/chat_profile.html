@@ -1,0 +1,242 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #007aff 0%, #00c6ff 100%);
+        --danger-soft: #fff1f2;
+        --danger-text: #e11d48;
+        --glass-bg: rgba(255, 255, 255, 0.8);
+        --card-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
+
+        /* Light Mode Colors */
+        --bg-color: #f4f7f9;
+        --card-bg: #ffffff;
+        --text-main: #1d1d1f;
+        --text-muted: #86868b;
+        --stat-bg: #f8fafc;
+        --stat-border: #f1f5f9;
+    }
+
+    [data-bs-theme="dark"] {
+        --bg-color: #121212;
+        --card-bg: #1e1e1e;
+        --text-main: #f5f5f7;
+        --text-muted: #a1a1a6;
+        --stat-bg: #2c2c2e;
+        --stat-border: #3a3a3c;
+        --card-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    body {
+        background-color: var(--bg-color) !important;
+        color: var(--text-main);
+    }
+
+    .profile-container {
+        max-width: 480px;
+        margin: 40px auto;
+        padding: 0 15px;
+        animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .profile-card {
+        background: var(--card-bg);
+        border-radius: 35px;
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        border: 1px solid var(--stat-border);
+        position: relative;
+    }
+
+    .profile-header {
+        height: 140px;
+        background: var(--primary-gradient);
+        position: relative;
+    }
+
+    .back-btn {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        width: 42px;
+        height: 42px;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        z-index: 10;
+        text-decoration: none;
+    }
+
+    .avatar-section {
+        margin-top: -65px;
+        position: relative;
+        text-align: center;
+    }
+
+    .profile-avatar {
+        width: 130px;
+        height: 130px;
+        border-radius: 40px;
+        border: 6px solid var(--card-bg);
+        object-fit: cover;
+        background: var(--card-bg);
+    }
+
+    .badge-mark { font-size: 1.3rem; vertical-align: middle; margin-left: 5px; }
+    .badge-dev { color: #007aff; }
+    .badge-official { color: #ffb300; }
+
+    .profile-info { text-align: center; padding: 20px 30px; }
+    .username-title { font-size: 26px; font-weight: 800; }
+    .talk-id { color: var(--text-muted); font-size: 15px; margin-bottom: 15px; }
+
+    .role-pill {
+        font-size: 11px;
+        padding: 6px 16px;
+        border-radius: 50px;
+        font-weight: 700;
+        text-transform: uppercase;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 10px;
+    }
+    .role-developer { background: rgba(0, 122, 255, 0.1); color: #007aff; }
+    .role-official { background: rgba(255, 179, 0, 0.1); color: #ffb300; }
+    .role-bot { background: #1c1c1e; color: #ffffff; }
+    .role-user { background: var(--stat-bg); color: var(--text-muted); }
+
+    .stats-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        padding: 0 30px;
+    }
+
+    .stat-box {
+        background: var(--stat-bg);
+        padding: 18px;
+        border-radius: 22px;
+        text-align: center;
+        border: 1px solid var(--stat-border);
+    }
+
+    .bio-text { color: var(--text-muted); font-size: 15px; line-height: 1.6; margin: 20px 0; padding: 0 20px; }
+
+    .action-buttons { padding: 20px 30px 40px; display: flex; flex-direction: column; gap: 12px; }
+
+    .btn-action {
+        height: 56px;
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        text-decoration: none !important;
+        transition: 0.3s;
+        border: none;
+    }
+
+    .btn-message { background: #007aff; color: white; }
+    .btn-message:hover { opacity: 0.9; transform: translateY(-2px); }
+    .btn-bot-status { background: #1c1c1e; color: white; cursor: default; }
+    .btn-block { background: var(--danger-soft); color: var(--danger-text); }
+</style>
+
+<div class="profile-container">
+    <div class="profile-card">
+        <a href="javascript:history.back()" class="back-btn">
+            <i class="fas fa-chevron-left"></i>
+        </a>
+
+        <div class="profile-header"></div>
+
+        <div class="avatar-section">
+            <img src="{{ viewed_user.profile.profile_pic.url }}" class="profile-avatar shadow" alt="Avatar">
+        </div>
+
+        <div class="profile-info">
+            <h2 class="username-title">
+                {{ viewed_user.username }}
+                {% if viewed_user.profile.role == 'developer' or viewed_user.profile.role == 'Official' %}
+                    <i class="bi bi-patch-check-fill badge-mark {% if viewed_user.profile.role == 'developer' %}badge-dev{% else %}badge-official{% endif %}" title="Verified Account"></i>
+                {% endif %}
+            </h2>
+            <div class="talk-id">ID: {{ viewed_user.profile.talk_id }}</div>
+
+            {% if viewed_user.username == 'ThuTalkOfficialBot' or viewed_user.username == 'ThuTalk' %}
+                <div class="role-pill role-bot">
+                    <i class="fas fa-robot"></i> OFFICIAL BOT
+                </div>
+            {% else %}
+                <div class="role-pill role-{{ viewed_user.profile.role|lower }}">
+                    <i class="fas fa-user-circle"></i> {{ viewed_user.profile.get_role_display }}
+                </div>
+            {% endif %}
+
+            <p class="bio-text">
+                {{ viewed_user.profile.bio|default:"No bio available yet." }}
+            </p>
+        </div>
+
+        <div class="stats-container">
+            <div class="stat-box">
+                <span class="stat-value" style="font-weight: 800; display: block;">{{ viewed_user.profile.friends.count }}</span>
+                <span class="stat-label" style="font-size: 12px; color: var(--text-muted);">Friends</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-value" style="font-weight: 800; display: block;">{{ viewed_user.posts.count }}</span>
+                <span class="stat-label" style="font-size: 12px; color: var(--text-muted);">Posts</span>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            {# Message Button #}
+            <a href="{% url 'chat_room' viewed_user.username %}" class="btn-action btn-message">
+                <i class="fas fa-comment-dots me-2"></i> Message
+            </a>
+
+            {# Bot Protection Status #}
+            {% if viewed_user.username == 'ThuTalkOfficialBot' or viewed_user.username == 'ThuTalk' %}
+                <div class="btn-action btn-bot-status" style="opacity: 0.8;">
+                    <i class="fas fa-shield-alt me-2"></i> Official Account
+                </div>
+            {% else %}
+                {% if is_blocked %}
+                    <form action="{% url 'unblock_user' viewed_user.id %}" method="POST">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-action w-100" style="background: #f0fdf4; color: #16a34a;">
+                            <i class="fas fa-lock-open me-2"></i> Unblock {{ viewed_user.username }}
+                        </button>
+                    </form>
+                {% else %}
+                    <form action="{% url 'block_user' viewed_user.id %}" method="POST">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-action btn-block w-100">
+                            <i class="fas fa-user-slash me-2"></i> Block User
+                        </button>
+                    </form>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    window.scrollTo(0,0);
+</script>
+
+{% endblock %}

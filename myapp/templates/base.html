@@ -1,23 +1,244 @@
+{% load static %}
+{% load pwa %}
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
 <head>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<style>
-    body { background-color: #f8f9fa; font-family: 'Inter', sans-serif; }
-    .card { transition: transform 0.3s; border: none; }
-    .card:hover { transform: translateY(-10px); box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; }
-    .navbar { background: linear-gradient(90deg, #1e3c72 0%, #2a5298 100%); }
-</style>
-</head>
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
-  <div class="container">
-    <a class="navbar-brand" href="/">MyTeam</a>
-    <div class="navbar-nav">
-      <a class="nav-link" href="/">Home</a>
-      <a class="nav-link" href="/add/">Add Profile</a>
-    </div>
-  </div>
-</nav>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 
-<div class="container">
-    {% block content %}
-    {% endblock %}
-</div>
+    {% progressive_web_app_meta %}
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ThuTalk">
+    <meta name="theme-color" content="#F2F2F7" id="theme-color-meta">
+
+    <title>ThuTalk</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <style>
+        :root {
+            --ios-blue: #007AFF;
+            --ios-bg: #F2F2F7;
+            --nav-blur: rgba(255, 255, 255, 0.8);
+            --ios-border: rgba(0,0,0,0.1);
+            --ios-card-bg: #ffffff;
+            --safe-area-inset-top: env(safe-area-inset-top);
+        }
+
+        [data-bs-theme="dark"] {
+            --ios-bg: #000000;
+            --nav-blur: rgba(28, 28, 30, 0.85);
+            --ios-border: rgba(255,255,255,0.1);
+            --bs-body-color: #ffffff;
+            --ios-card-bg: #1c1c1e;
+        }
+
+        body {
+            background-color: var(--ios-bg);
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+            transition: background-color 0.3s ease;
+            min-height: 100vh;
+            padding-top: calc(60px + var(--safe-area-inset-top));
+            padding-bottom: 90px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* --- LOADER REMOVED --- */
+        #loader { display: none; }
+
+        .navbar {
+            background: var(--nav-blur);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 0.5px solid var(--ios-border);
+            height: calc(60px + var(--safe-area-inset-top));
+            padding-top: var(--safe-area-inset-top);
+            z-index: 1050;
+        }
+
+        .navbar-brand { font-weight: 800; letter-spacing: -1px; font-size: 1.6rem; }
+
+        .nav-profile-pic {
+            width: 34px; height: 34px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 1.5px solid var(--ios-blue);
+        }
+
+        .mobile-nav {
+            display: none;
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: var(--nav-blur);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-top: 0.5px solid var(--ios-border);
+            z-index: 1050;
+            height: calc(65px + env(safe-area-inset-bottom));
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .tab-item {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-decoration: none; color: #8E8E93; font-size: 0.65rem;
+            font-weight: 500; flex: 1; transition: 0.2s;
+            position: relative;
+        }
+
+        .tab-item i { font-size: 1.45rem; margin-bottom: 1px; }
+        .tab-item.active { color: var(--ios-blue); }
+        .tab-item:active { opacity: 0.5; }
+
+        .badge-noti {
+            position: absolute; top: 8px; right: 22%; font-size: 0.6rem;
+            padding: 0.35em 0.55em; background-color: #FF3B30 !important;
+            border: 2px solid var(--ios-card-bg); font-weight: bold; border-radius: 50px;
+        }
+
+        @media (max-width: 767.98px) {
+            .mobile-nav { display: flex; justify-content: space-around; align-items: center; }
+            .desktop-icons { display: none !important; }
+        }
+
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .ios-alert-container {
+            position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+            z-index: 2000; width: 90%; max-width: 400px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loader"></div>
+
+    <nav class="navbar fixed-top">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a class="navbar-brand text-primary" href="{% url 'home' %}">Thu Talk</a>
+
+            <div class="d-flex align-items-center gap-3">
+                {% if user.is_authenticated %}
+                    <div class="desktop-icons d-flex gap-4 align-items-center">
+                        <a href="{% url 'search_page' %}" class="text-reset text-decoration-none"><i class="bi bi-search fs-5"></i></a>
+                        <a href="{% url 'chat_list' %}" class="text-reset text-decoration-none position-relative">
+                            <i class="bi bi-chat-dots fs-5"></i>
+                            <span id="desktop-chat-badge" class="badge badge-noti d-none">0</span>
+                        </a>
+                        <a href="{% url 'notifications' %}" class="text-reset text-decoration-none position-relative">
+                            <i class="bi bi-bell fs-5"></i>
+                            <span id="desktop-notif-badge" class="badge badge-noti d-none">0</span>
+                        </a>
+                        <a href="{% url 'settings' %}" class="text-reset text-decoration-none"><i class="bi bi-gear fs-5"></i></a>
+                    </div>
+
+                    <a href="{% url 'profile_view' user.username %}" class="d-flex align-items-center">
+                        {% if user.profile.profile_pic %}
+                            <img src="{{ user.profile.profile_pic.url }}" class="nav-profile-pic">
+                        {% else %}
+                            <i class="bi bi-person-circle fs-3 text-secondary"></i>
+                        {% endif %}
+                    </a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn btn-primary rounded-pill px-4 btn-sm fw-bold">Login</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    {% if user.is_authenticated %}
+    <div class="mobile-nav">
+        <a href="{% url 'home' %}" class="tab-item {% if request.path == '/' %}active{% endif %}">
+            <i class="bi bi-house{% if request.path == '/' %}-fill{% endif %}"></i>
+            <span>Home</span>
+        </a>
+        <a href="{% url 'search_page' %}" class="tab-item {% if 'search' in request.path %}active{% endif %}">
+            <i class="bi bi-search"></i>
+            <span>Search</span>
+        </a>
+        <a href="{% url 'chat_list' %}" class="tab-item position-relative {% if 'chat' in request.path %}active{% endif %}">
+            <i class="bi bi-chat-dots{% if 'chat' in request.path %}-fill{% endif %}"></i>
+            <span>Chats</span>
+            <span id="mobile-chat-badge" class="badge badge-noti d-none">0</span>
+        </a>
+        <a href="{% url 'notifications' %}" class="tab-item position-relative {% if 'notifications' in request.path %}active{% endif %}">
+            <i class="bi bi-bell{% if 'notifications' in request.path %}-fill{% endif %}"></i>
+            <span>Inbox</span>
+            <span id="mobile-notif-badge" class="badge badge-noti d-none">0</span>
+        </a>
+        <a href="{% url 'settings' %}" class="tab-item {% if 'settings' in request.path %}active{% endif %}">
+            <i class="bi bi-gear{% if 'settings' in request.path %}-fill{% endif %}"></i>
+            <span>Settings</span>
+        </a>
+    </div>
+    {% endif %}
+
+    <div class="ios-alert-container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-dark fade show mb-2 border-0 shadow d-flex justify-content-between align-items-center"
+                     style="border-radius: 14px; background: var(--nav-blur); backdrop-filter: blur(15px); color: var(--bs-body-color);">
+                    <small class="fw-bold">{{ message }}</small>
+                    <button type="button" class="btn-close {% if request.path == 'dark' %}btn-close-white{% endif %}" data-bs-dismiss="alert" style="font-size: 0.6rem;"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <main class="container fade-in">
+        {% block content %}{% endblock %}
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // ၁။ LOADER LOGIC REMOVED (အဝိုင်းလည်တာ လုံးဝပျောက်စေရန်)
+
+        // Theme Persistence & Sync
+        (function() {
+            const theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-bs-theme', theme);
+            const metaTheme = document.getElementById('theme-color-meta');
+            if (metaTheme) metaTheme.content = theme === 'dark' ? '#000000' : '#F2F2F7';
+        })();
+
+        // Badge Updates
+        function updateBadges() {
+            fetch('{% url "get_unread_count" %}')
+                .then(res => res.ok ? res.json() : Promise.reject())
+                .then(data => {
+                    const updateBadgeDisplay = (ids, val) => {
+                        ids.forEach(id => {
+                            const el = document.getElementById(id);
+                            if(el) {
+                                if(val > 0) {
+                                    el.innerText = val > 9 ? '9+' : val;
+                                    el.classList.remove('d-none');
+                                } else {
+                                    el.classList.add('d-none');
+                                }
+                            }
+                        });
+                    };
+                    // Backend ကနေ လာတဲ့ data field တွေနဲ့ ကိုက်အောင် ပြင်ထားပါတယ်
+                    updateBadgeDisplay(['desktop-notif-badge', 'mobile-notif-badge'], data.notifications);
+                    updateBadgeDisplay(['desktop-chat-badge', 'mobile-chat-badge'], data.chats);
+                }).catch(() => {});
+        }
+
+        {% if user.is_authenticated %}
+            updateBadges();
+            setInterval(updateBadges, 2000); //  ၂စက္ကန့်တစ်ခါ badge စစ်မယ်
+        {% endif %}
+
+        // Auto hide alerts
+        setTimeout(() => {
+            document.querySelectorAll('.alert').forEach(a => {
+                const bsAlert = bootstrap.Alert.getOrCreateInstance(a);
+                bsAlert.close();
+            });
+        }, 3500);
+    </script>
+</body>
+</html>

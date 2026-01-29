@@ -1,0 +1,312 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    :root {
+        --ios-accent: #007aff;
+        --ios-danger: #ff3b30;
+        --ios-bg: #f2f2f7; /* iOS System Gray 6 */
+        --ios-card: #ffffff;
+        --ios-text: #000000;
+        --ios-muted: #8e8e93;
+        --border-color: rgba(0,0,0,0.1);
+        --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    [data-bs-theme="dark"] {
+        --ios-bg: #000000;
+        --ios-card: #1c1c1e;
+        --ios-text: #ffffff;
+        --ios-muted: #8e8e93;
+        --border-color: #38383a;
+        --card-shadow: none;
+    }
+
+    body {
+        background-color: var(--ios-bg);
+        color: var(--ios-text);
+        transition: background 0.3s ease;
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    .settings-container {
+        animation: fadeIn 0.4s ease-out;
+        padding-top: 20px;
+        padding-bottom: 100px;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .page-header {
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 20px;
+        padding-left: 10px;
+        letter-spacing: -0.5px;
+    }
+
+    .settings-group {
+        background: var(--ios-card);
+        border-radius: 12px;
+        margin-bottom: 25px;
+        padding: 0;
+        box-shadow: var(--card-shadow);
+        border: 0.5px solid var(--border-color);
+        overflow: hidden;
+    }
+
+    .group-label {
+        font-size: 13px;
+        color: var(--ios-muted);
+        margin: 0 0 8px 20px;
+        display: block;
+        text-transform: uppercase;
+        letter-spacing: 0.2px;
+    }
+
+    .menu-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 16px;
+        text-decoration: none !important;
+        color: var(--ios-text) !important;
+        transition: background 0.2s;
+        border: none;
+        background: none;
+        width: 100%;
+        text-align: left;
+    }
+
+    .menu-item:not(:last-child) {
+        border-bottom: 0.5px solid var(--border-color);
+    }
+
+    .menu-item:active { background: rgba(0,0,0,0.1); }
+
+    .icon-wrap {
+        width: 28px; height: 28px;
+        border-radius: 7px;
+        display: flex; align-items: center; justify-content: center;
+        margin-right: 12px; color: white; font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+
+    .label-wrap { flex-grow: 1; font-weight: 400; font-size: 16px; }
+    .chevron-icon { color: var(--ios-muted); opacity: 0.5; font-size: 0.9rem; }
+
+    .profile-section {
+        padding: 12px 16px;
+        display: flex; align-items: center;
+        background: var(--ios-card);
+        border-radius: 12px;
+        margin-bottom: 30px;
+        box-shadow: var(--card-shadow);
+        border: 0.5px solid var(--border-color);
+    }
+
+    .profile-img {
+        width: 60px; height: 60px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 15px;
+    }
+
+    /* Custom Switch Style */
+    .form-check-input {
+        width: 51px !important;
+        height: 31px !important;
+        cursor: pointer;
+        background-color: #e9e9ea;
+        border: none !important;
+    }
+    .form-check-input:checked {
+        background-color: #34c759 !important;
+    }
+
+    .modal-content {
+        border-radius: 14px;
+        background: var(--ios-card);
+        color: var(--ios-text);
+    }
+</style>
+
+<div class="container settings-container">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-5">
+            <h1 class="page-header">Settings</h1>
+
+            <div class="profile-section">
+                {% if user.profile.profile_pic %}
+                    <img src="{{ user.profile.profile_pic.url }}" class="profile-img">
+                {% else %}
+                    <div class="profile-img bg-secondary d-flex align-items-center justify-content-center text-white">
+                        <i class="bi bi-person-fill fs-1"></i>
+                    </div>
+                {% endif %}
+                <div class="flex-grow-1 overflow-hidden">
+                    <h6 class="m-0 fw-bold text-truncate" style="font-size: 18px;">{{ user.username }}</h6>
+                    <p class="m-0 text-muted small text-truncate">{{ user.email }}</p>
+                </div>
+                <a href="{% url 'profile_view' user.username %}" class="btn btn-light btn-sm rounded-pill px-3 fw-bold border">Profile</a>
+            </div>
+
+            <span class="group-label">Account</span>
+            <div class="settings-group">
+                <a href="{% url 'edit_profile' %}" class="menu-item">
+                    <div class="icon-wrap" style="background: #007aff;"><i class="bi bi-person-fill"></i></div>
+                    <span class="label-wrap">Edit Profile</span>
+                    <i class="bi bi-chevron-right chevron-icon"></i>
+                </a>
+                <button class="menu-item" data-bs-toggle="modal" data-bs-target="#passwordModal">
+                    <div class="icon-wrap" style="background: #5856d6;"><i class="bi bi-shield-lock-fill"></i></div>
+                    <span class="label-wrap">Security & Password</span>
+                    <i class="bi bi-chevron-right chevron-icon"></i>
+                </button>
+            </div>
+
+            <span class="group-label">Preferences</span>
+            <div class="settings-group">
+                <div class="menu-item d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-wrap" style="background: #1c1c1e;"><i class="bi bi-moon-stars-fill"></i></div>
+                        <span class="label-wrap">Dark Mode</span>
+                    </div>
+                    <div class="form-check form-switch p-0 m-0">
+                        <input class="form-check-input shadow-none" type="checkbox" id="themeToggle">
+                    </div>
+                </div>
+            </div>
+
+            <span class="group-label">Support & Privacy</span>
+            <div class="settings-group">
+                <button class="menu-item" data-bs-toggle="modal" data-bs-target="#privacyModal">
+                    <div class="icon-wrap" style="background: #34c759;"><i class="bi bi-file-earmark-lock2-fill"></i></div>
+                    <span class="label-wrap">Privacy Policy</span>
+                    <i class="bi bi-chevron-right chevron-icon"></i>
+                </button>
+                <button class="menu-item" data-bs-toggle="modal" data-bs-target="#blockedModal">
+                    <div class="icon-wrap" style="background: #af52de;"><i class="bi bi-slash-circle-fill"></i></div>
+                    <span class="label-wrap">Blocked Users</span>
+                    <i class="bi bi-chevron-right chevron-icon"></i>
+                </button>
+            </div>
+
+            <div class="settings-group">
+                <form action="{% url 'logout' %}" method="POST" class="m-0" onsubmit="return confirm('Logout of your account?')">
+                    {% csrf_token %}
+                    <button type="submit" class="menu-item">
+                        <div class="icon-wrap" style="background: var(--ios-danger);"><i class="bi bi-box-arrow-right"></i></div>
+                        <span class="label-wrap text-danger fw-bold">Sign Out</span>
+                    </button>
+                </form>
+                <a href="{% url 'delete_account' %}" class="menu-item">
+                    <div class="icon-wrap" style="background: #8e8e93;"><i class="bi bi-trash3-fill"></i></div>
+                    <span class="label-wrap text-muted">Delete Account</span>
+                    <i class="bi bi-chevron-right chevron-icon"></i>
+                </a>
+            </div>
+
+            <p class="text-center text-muted small mt-4 opacity-50">ThuTalk v1.0.0 (Stable Build)</p>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="blockedModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="fw-bold m-0 p-2">Blocked Users</h6>
+                <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-3">
+                {% for item in blocked_list %}
+                    <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
+                        <div class="d-flex align-items-center">
+                            {% if item.blocked.profile.profile_pic %}
+                                <img src="{{ item.blocked.profile.profile_pic.url }}" class="rounded-circle me-3" style="width: 40px; height: 40px; object-fit: cover;">
+                            {% else %}
+                                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                    <i class="bi bi-person text-secondary"></i>
+                                </div>
+                            {% endif %}
+                            <div>
+                                <p class="m-0 fw-bold small">{{ item.blocked.username }}</p>
+                                <span class="text-muted" style="font-size: 11px;">Blocked</span>
+                            </div>
+                        </div>
+                        <form action="{% url 'unblock_user' item.blocked.id %}" method="POST">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-primary btn-sm rounded-pill px-3" style="font-size: 12px;">Unblock</button>
+                        </form>
+                    </div>
+                {% empty %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-person-x fs-1 text-muted opacity-25"></i>
+                        <p class="text-muted mt-2 small">Your blocked list is empty.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="privacyModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header">
+                <h6 class="fw-bold m-0">Privacy Policy</h6>
+                <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body small text-muted">
+                <p>We value your privacy. Your data is encrypted and never shared with third parties.</p>
+                <ul class="mb-0">
+                    <li>Security: End-to-end encryption.</li>
+                    <li>Transparency: No hidden trackers.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="passwordModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="fw-bold m-0 p-2">Security</h6>
+                <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{% url 'change_password' %}" method="POST">
+                {% csrf_token %}
+                <div class="modal-body p-3">
+                    <input type="password" name="old_password" placeholder="Old Password" class="form-control mb-2 border-0 bg-light shadow-none" style="border-radius: 10px; padding: 12px;" required>
+                    <input type="password" name="new_password1" placeholder="New Password" class="form-control mb-2 border-0 bg-light shadow-none" style="border-radius: 10px; padding: 12px;" required>
+                    <input type="password" name="new_password2" placeholder="Confirm New Password" class="form-control border-0 bg-light shadow-none" style="border-radius: 10px; padding: 12px;" required>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-bold shadow-sm">Update Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    const themeToggle = document.getElementById('themeToggle');
+    const root = document.documentElement;
+
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    root.setAttribute('data-bs-theme', savedTheme);
+    if(themeToggle) themeToggle.checked = (savedTheme === 'dark');
+
+    themeToggle.addEventListener('change', () => {
+        const theme = themeToggle.checked ? 'dark' : 'light';
+        root.setAttribute('data-bs-theme', theme);
+        localStorage.setItem('theme', theme);
+    });
+</script>
+{% endblock %}

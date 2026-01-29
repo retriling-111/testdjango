@@ -1,0 +1,253 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --glass-bg: #ffffff;
+        --accent-color: #6366f1;
+        --text-main: #1e293b;
+        --text-sub: #64748b;
+        --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+        --border-style: 1px solid rgba(0, 0, 0, 0.05);
+        --badge-dev: #007aff;
+        --badge-official: #34c759;
+        --badge-creator: #000000;
+    }
+
+    [data-bs-theme="dark"] {
+        --glass-bg: #1e293b;
+        --text-main: #f8fafc;
+        --text-sub: #94a3b8;
+        --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        --border-style: 1px solid rgba(255, 255, 255, 0.05);
+        --badge-creator: #ffffff;
+    }
+
+    body {
+        font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+        background-color: var(--bs-body-bg);
+    }
+
+    .chat-container {
+        max-width: 600px;
+        margin: 20px auto;
+        padding: 0 15px;
+    }
+
+    .header-section {
+        padding: 20px 5px;
+        animation: fadeIn 0.5s ease;
+    }
+
+    .header-section h2 {
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        font-size: 1.8rem;
+    }
+
+    /* --- Chat Cards (Modern iOS Reference) --- */
+    .chat-card {
+        background: var(--glass-bg);
+        border: var(--border-style);
+        border-radius: 22px; /* Smooth rounded corners */
+        padding: 14px 18px;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        text-decoration: none !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: var(--card-shadow);
+    }
+
+    .chat-card:hover {
+        transform: translateY(-2px);
+        filter: brightness(0.98);
+    }
+
+    /* Avatar Logic */
+    .avatar-wrapper {
+        position: relative;
+        margin-right: 15px;
+    }
+
+    .user-img {
+        width: 58px;
+        height: 58px;
+        border-radius: 20px; /* Squircle style */
+        object-fit: cover;
+    }
+
+    .status-dot {
+        position: absolute;
+        bottom: -2px;
+        right: -2px;
+        width: 15px;
+        height: 15px;
+        background: #22c55e;
+        border: 3px solid var(--glass-bg);
+        border-radius: 50%;
+    }
+
+    .status-dot.online {
+        animation: pulse-green 2s infinite;
+    }
+
+    @keyframes pulse-green {
+        0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+        70% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+    }
+
+    .info-content {
+        flex-grow: 1;
+        min-width: 0;
+    }
+
+    .user-name {
+        font-weight: 700;
+        color: var(--text-main);
+        font-size: 1.05rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    /* Badge Marks Fixing */
+    .badge-mark { font-size: 1.1rem; vertical-align: middle; }
+    .badge-dev { color: var(--badge-dev); }
+    .badge-official { color: var(--badge-official); }
+    .badge-creator { color: var(--badge-creator); }
+
+    .badge-bot {
+        background: #64748b;
+        color: white;
+        font-size: 0.65rem;
+        padding: 2px 6px;
+        border-radius: 6px;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+    }
+
+    .msg-time {
+        font-size: 0.75rem;
+        color: var(--text-sub);
+        font-weight: 500;
+    }
+
+    .last-text {
+        color: var(--text-sub);
+        font-size: 0.92rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: block;
+    }
+
+    .unread-pill {
+        background: var(--accent-color);
+        color: white;
+        font-size: 0.75rem;
+        min-width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        padding: 0 6px;
+        font-weight: 700;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<div class="chat-container">
+    <div class="header-section d-flex justify-content-between align-items-center">
+        <h2>Messages</h2>
+        <div class="unread-count-total small badge rounded-pill bg-danger">
+            {{ chat_data|length }} active
+        </div>
+    </div>
+
+    <div class="chat-list" id="animated-list">
+        {% for item in chat_data %}
+        <a href="{% url 'chat_room' item.user.username %}" class="chat-card">
+            <div class="avatar-wrapper">
+                {% if item.user.profile.profile_pic %}
+                    <img src="{{ item.user.profile.profile_pic.url }}" class="user-img shadow-sm">
+                {% else %}
+                    <div class="user-img bg-secondary d-flex align-items-center justify-content-center fw-bold text-white shadow-sm">
+                        {{ item.user.username|slice:":1"|upper }}
+                    </div>
+                {% endif %}
+
+                {% if item.user.profile.is_online %}
+                    <div class="status-dot online"></div>
+                {% endif %}
+            </div>
+
+            <div class="info-content">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="user-name">
+                        {{ item.user.username }}
+
+                        {% if item.user.profile.talk_id == 'talk-0000' %}
+                            <span class="badge-bot">BOT</span>
+                        {% elif item.user.profile.role == 'developer' %}
+                            <i class="bi bi-patch-check-fill badge-mark badge-dev" title="Developer"></i>
+                        {% elif item.user.profile.role == 'Official' %}
+                            <i class="bi bi-patch-check-fill badge-mark badge-official" title="Official"></i>
+                        {% elif item.user.profile.role == 'creator' %}
+                            <i class="bi bi-patch-check-fill badge-mark badge-creator" title="Creator"></i>
+                        {% endif %}
+                    </span>
+                    <span class="msg-time">{{ item.last_message.timestamp|timesince }}</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="last-text">
+                        {% if item.last_message.sender == request.user %}
+                            <i class="bi bi-check2-all me-1"></i>You:
+                        {% endif %}
+                        {{ item.last_message.content|truncatechars:35|default:"Tap to start chatting" }}
+                    </span>
+
+                    {% if item.unread_count > 0 %}
+                        <span class="unread-pill">{{ item.unread_count }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </a>
+        {% empty %}
+        <div class="text-center py-5 opacity-50">
+            <i class="bi bi-chat-dots display-4 mb-3 d-block"></i>
+            <p>No conversations yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    function updateChatList() {
+        fetch(window.location.href)
+            .then(res => res.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newContent = doc.getElementById('animated-list').innerHTML;
+                const oldContent = document.getElementById('animated-list');
+
+                if (oldContent.innerHTML.trim() !== newContent.trim()) {
+                    oldContent.innerHTML = newContent;
+                }
+            });
+    }
+    // Refresh every 7 seconds to save battery/data
+    setInterval(updateChatList, 2000);
+</script>
+{% endblock %}

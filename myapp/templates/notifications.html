@@ -1,0 +1,310 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+<style>
+    :root {
+        --ios-primary: #007AFF;
+        --ios-bg: #f2f2f7;
+        --ios-card-bg: rgba(255, 255, 255, 0.94);
+        --ios-unread-bg: rgba(0, 122, 255, 0.05);
+        --text-main: #1c1c1e;
+        --text-muted: #8e8e93;
+        --ios-border: rgba(0, 0, 0, 0.1);
+    }
+
+    [data-bs-theme="dark"] {
+        --ios-bg: #000000;
+        --ios-card-bg: rgba(28, 28, 30, 0.94);
+        --ios-unread-bg: rgba(10, 132, 255, 0.08);
+        --text-main: #f5f5f7;
+        --text-muted: #a1a1a6;
+        --ios-border: rgba(255, 255, 255, 0.12);
+    }
+
+    body {
+        background-color: var(--ios-bg);
+        color: var(--text-main);
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    .notif-wrapper {
+        max-width: 600px;
+        margin: 20px auto;
+        padding: 0 16px;
+        animation: iosSlideUp 0.5s cubic-bezier(0.1, 0.8, 0.2, 1);
+    }
+
+    @keyframes iosSlideUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .header-flex {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 25px;
+        padding: 0 4px;
+    }
+
+    .section-title {
+        font-size: 2.1rem;
+        font-weight: 800;
+        margin: 0;
+        letter-spacing: -1px;
+    }
+
+    .mark-read-btn {
+        font-size: 0.95rem;
+        color: var(--ios-primary);
+        text-decoration: none;
+        font-weight: 500;
+        transition: 0.2s;
+        margin-bottom: 6px;
+    }
+    .mark-read-btn:hover { opacity: 0.7; }
+
+    /* ✨ iOS Modern Card */
+    .ios-card {
+        background: var(--ios-card-bg);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        border-radius: 20px;
+        border: 1px solid var(--ios-border);
+        margin-bottom: 28px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+    }
+
+    .card-label {
+        padding: 14px 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 0.5px solid var(--ios-border);
+    }
+
+    .notif-item {
+        padding: 16px 20px;
+        border-bottom: 0.5px solid var(--ios-border);
+        transition: background 0.2s ease;
+        text-decoration: none !important;
+        color: inherit;
+        display: flex;
+        align-items: center;
+        position: relative;
+    }
+
+    .notif-item:last-child { border-bottom: none; }
+    .notif-item:active { background: rgba(120, 120, 120, 0.1); }
+
+    .unread { background-color: var(--ios-unread-bg); }
+
+    .unread-dot {
+        position: absolute;
+        left: 6px;
+        width: 10px;
+        height: 10px;
+        background-color: var(--ios-primary);
+        border-radius: 50%;
+        box-shadow: 0 0 8px rgba(0,122,255,0.4);
+        z-index: 10;
+    }
+
+    /* 📸 Direct Profile Photo Design (Fix) */
+    .sender-img-container {
+        position: relative;
+        flex-shrink: 0;
+        margin-right: 16px;
+    }
+
+    .sender-img {
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        object-fit: cover;
+        /* iOS Premium Border Layer */
+        border: 2px solid var(--ios-card-bg);
+        box-shadow: 0 0 0 1.5px var(--ios-border), 0 4px 10px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+    }
+
+    .sender-placeholder {
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #e1e1e1 0%, #cfcfd4 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: #8e8e93;
+        border: 2px solid var(--ios-card-bg);
+        box-shadow: 0 0 0 1.5px var(--ios-border);
+    }
+
+    .notif-item:hover .sender-img {
+        transform: scale(1.05);
+    }
+
+    .content-area { flex-grow: 1; }
+
+    .notif-text {
+        font-size: 0.98rem;
+        margin-bottom: 2px;
+        line-height: 1.4;
+        color: var(--text-main);
+    }
+
+    .notif-text b { font-weight: 700; }
+    .notif-text .highlight { color: var(--ios-primary); font-weight: 600; }
+
+    .time-stamp {
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    /* Actions Buttons */
+    .action-group {
+        display: flex;
+        gap: 12px;
+        margin-top: 14px;
+    }
+
+    .action-btn {
+        border-radius: 12px;
+        font-weight: 700;
+        padding: 10px 15px;
+        font-size: 0.85rem;
+        border: none;
+        flex: 1;
+        text-align: center;
+        text-decoration: none !important;
+        transition: all 0.2s ease;
+    }
+
+    .btn-accept { background: var(--ios-primary); color: white; }
+    .btn-accept:hover { background: #0062cc; }
+    .btn-accept:active { transform: scale(0.96); }
+
+    .btn-delete {
+        background: var(--ios-bg);
+        color: var(--text-main);
+        border: 1px solid var(--ios-border);
+    }
+    .btn-delete:hover { background: #e5e5ea; }
+
+    .empty-state {
+        text-align: center;
+        padding: 100px 20px;
+        color: var(--text-muted);
+    }
+</style>
+
+<div class="notif-wrapper">
+    <div class="header-flex">
+        <h3 class="section-title">Notifications</h3>
+        {% if notifications %}
+        <a href="{% url 'mark_all_notifications_read' %}" class="mark-read-btn">
+            Mark All Read
+        </a>
+        {% endif %}
+    </div>
+
+    {# --- Friend Requests Section --- #}
+    {% if friend_requests %}
+        <div class="ios-card">
+            <div class="card-label">Friend Requests</div>
+            {% for req in friend_requests %}
+            <div class="notif-item">
+                <div class="sender-img-container">
+                    <a href="{% url 'profile_view' req.from_user.username %}">
+                        {% if req.from_user.profile.profile_pic %}
+                            <img src="{{ req.from_user.profile.profile_pic.url }}" class="sender-img">
+                        {% else %}
+                            <div class="sender-placeholder"><i class="bi bi-person-fill"></i></div>
+                        {% endif %}
+                    </a>
+                </div>
+                <div class="content-area">
+                    <div class="notif-text">
+                        <b>{{ req.from_user.username }}</b> sent you a friend request.
+                    </div>
+                    <div class="action-group">
+                        <a href="{% url 'accept_friend' req.id %}" class="action-btn btn-accept">Accept</a>
+                        <a href="{% url 'delete_request' req.id %}" class="action-btn btn-delete">Delete</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {# --- Earlier Activity Section --- #}
+    <div class="ios-card">
+        <div class="card-label">Earlier Activity</div>
+        <div id="activity-list">
+            {% for n in notifications %}
+
+            <a href="{% if n.post %}{% url 'home' %}#post-{{ n.post.id }}{% else %}{% url 'profile_view' n.sender.username %}{% endif %}"
+               class="notif-item {% if not n.is_seen %}unread{% endif %}">
+
+                {% if not n.is_seen %}<div class="unread-dot"></div>{% endif %}
+
+                <div class="sender-img-container">
+                    {% if n.sender.profile.profile_pic %}
+                        <img src="{{ n.sender.profile.profile_pic.url }}" class="sender-img">
+                    {% else %}
+                        <div class="sender-placeholder"><i class="bi bi-person-fill"></i></div>
+                    {% endif %}
+                </div>
+
+                <div class="content-area">
+                    <div class="notif-text">
+                        <b>{{ n.sender.username }}</b>
+                        {% if n.notification_type == 'Like' %}
+                            <span class="highlight">liked</span> your post. ❤️
+                        {% elif n.notification_type == 'Comment' %}
+                            <span class="highlight">commented</span>: <span style="font-style: italic; opacity: 0.8;">"{{ n.content|truncatechars:40 }}"</span> 💬
+                        {% else %}
+                            {{ n.content }}
+                        {% endif %}
+                    </div>
+                    <div class="time-stamp">
+                        <i class="bi bi-clock" style="font-size: 0.75rem;"></i> {{ n.created_at|timesince }} ago
+                    </div>
+                </div>
+
+                {% if not n.is_seen %}
+                    <i class="bi bi-circle-fill text-primary ms-2" style="font-size: 0.55rem;"></i>
+                {% endif %}
+            </a>
+
+            {% empty %}
+            <div class="empty-state">
+                <i class="bi bi-bell-slash" style="font-size: 4.5rem; opacity: 0.15; color: var(--ios-primary);"></i>
+                <p class="mt-4 fw-bold" style="font-size: 1.2rem; letter-spacing: -0.5px;">No Notifications</p>
+                <small style="display: block; opacity: 0.7; line-height: 1.5;">When someone interacts with your posts,<br>you'll see them here.</small>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+    window.addEventListener('load', function() {
+        setTimeout(function() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 100);
+    });
+</script>
+{% endblock %}

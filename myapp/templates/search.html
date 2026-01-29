@@ -1,0 +1,314 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    :root {
+        --glass-bg: rgba(255, 255, 255, 0.75);
+        --glass-border: rgba(0, 0, 0, 0.08);
+        --ios-blue: #007AFF;
+        --search-bg: #e3e3e8;
+        --text-color: #1c1c1e;
+        --ios-gray: #8e8e93;
+        --bg-color: #f2f2f7;
+    }
+
+    [data-bs-theme="dark"] {
+        --glass-bg: rgba(28, 28, 30, 0.85);
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --search-bg: #1c1c1e;
+        --text-color: #ffffff;
+        --bg-color: #000000;
+    }
+
+    body {
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+    }
+
+    .search-header {
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        background: var(--glass-bg);
+        padding: 15px 0;
+        margin-bottom: 20px;
+        border-bottom: 0.5px solid var(--glass-border);
+    }
+
+    .search-box {
+        background: var(--search-bg);
+        border-radius: 12px;
+        padding: 5px 15px;
+        display: flex;
+        align-items: center;
+        border: 1px solid transparent;
+        transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .search-box:focus-within {
+        border-color: var(--ios-blue);
+        background: var(--glass-bg);
+        box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+    }
+
+    .search-box input {
+        border: none;
+        background: transparent;
+        width: 100%;
+        padding: 8px;
+        outline: none;
+        font-size: 16px;
+        color: var(--text-color);
+    }
+
+    /* ✨ iOS Direct Profile Photo Design Fix */
+    .avatar-wrapper {
+        position: relative;
+        display: inline-block;
+        padding: 5px;
+    }
+
+    .direct-avatar {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 50%; /* အဝိုင်းပုံစံ ပြောင်းလိုက်သည် */
+        border: 3px solid var(--bg-color);
+        box-shadow: 0 0 0 2px var(--ios-blue), 0 8px 20px rgba(0,0,0,0.15);
+        transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .glass-card:hover .direct-avatar {
+        transform: scale(1.08) rotate(2deg);
+        box-shadow: 0 0 15px rgba(0, 122, 255, 0.4), 0 12px 25px rgba(0,0,0,0.2);
+    }
+
+    .glass-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: 30px;
+        padding: 30px 20px;
+        margin-bottom: 25px;
+        text-align: center;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
+        animation: fadeIn 0.5s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .badge-official-search {
+        background: linear-gradient(135deg, #007AFF, #00C7FF);
+        color: white;
+        font-size: 10px;
+        padding: 4px 12px;
+        border-radius: 50px;
+        font-weight: 800;
+        margin-left: 6px;
+        box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+    }
+
+    .badge-bot-search {
+        background: #3a3a3c;
+        color: #ffffff;
+        font-size: 10px;
+        padding: 4px 12px;
+        border-radius: 50px;
+        font-weight: 800;
+        margin-left: 6px;
+    }
+
+    .btn-main-add {
+        background: var(--ios-blue);
+        color: #fff;
+        border: none;
+        border-radius: 16px;
+        height: 48px;
+        font-weight: 700;
+        transition: 0.3s;
+        box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2);
+    }
+
+    .btn-unfriend {
+        background: rgba(255, 59, 48, 0.1);
+        color: #ff3b30;
+        border: 1px solid rgba(255, 59, 48, 0.2);
+        border-radius: 16px;
+        height: 48px;
+        font-weight: 700;
+    }
+
+    .btn-action-circle {
+        width: 48px;
+        height: 48px;
+        border-radius: 16px;
+        background: var(--search-bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-color);
+        text-decoration: none !important;
+        transition: 0.3s;
+    }
+
+    .btn-action-circle:hover {
+        background: var(--ios-blue);
+        color: white !important;
+        transform: translateY(-2px);
+    }
+
+    .user-name {
+        color: var(--text-color);
+        font-weight: 800;
+        font-size: 1.25rem;
+        letter-spacing: -0.5px;
+    }
+
+    .user-bio {
+        color: var(--ios-gray);
+        font-size: 0.9rem;
+        line-height: 1.5;
+        margin-top: 8px;
+    }
+
+    .status-badge {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        font-weight: 800;
+    }
+</style>
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-5">
+        <div class="search-header">
+            <form method="GET" action="{% url 'search_page' %}" class="px-3">
+                <div class="search-box">
+                    <i class="bi bi-search text-muted"></i>
+                    <input type="text" name="q" placeholder="Search Username or Talk ID..." value="{{ query|default:'' }}" autofocus>
+                </div>
+            </form>
+        </div>
+
+        {% if users_data %}
+            <div class="px-3">
+                {% for data in users_data %}
+                <div class="glass-card">
+                    <div class="avatar-container mb-3">
+                        <div class="avatar-wrapper">
+                            <img src="{{ data.user.profile.profile_pic.url }}" class="direct-avatar">
+                        </div>
+                    </div>
+
+                    <div class="user-name d-flex align-items-center justify-content-center">
+                        {{ data.user.username }}
+
+                        {% if data.is_bot or data.user.username == 'ThuTalkOfficialBot' or data.user.username == 'ThuTalk' %}
+                            <span class="badge-bot-search"><i class="bi bi-robot"></i> BOT</span>
+                        {% elif data.user.profile.role == 'developer' or data.user.profile.role == 'Official' %}
+                            <span class="badge-official-search"><i class="bi bi-patch-check-fill"></i> OFFICIAL</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="talk-id-tag mt-1 mb-2 small opacity-75 fw-bold text-primary">
+                        ID: {{ data.user.profile.talk_id }}
+                    </div>
+
+                    <p class="user-bio px-3">
+                        {{ data.user.profile.bio|default:"No bio available"|truncatechars:70 }}
+                    </p>
+
+                    <div class="card-actions mt-4 d-flex gap-2">
+                        <a href="{% url 'profile_view' data.user.username %}" class="btn-action-circle" title="View Profile">
+                            <i class="bi bi-person-bounding-box fs-5"></i>
+                        </a>
+
+                        <div class="flex-grow-1">
+                            {% if data.is_bot or data.user.username == 'ThuTalkOfficialBot' or data.user.username == 'ThuTalk' %}
+                                <button class="btn btn-dark w-100 status-badge d-flex align-items-center justify-content-center gap-2" style="border-radius:16px; height:48px;" disabled>
+                                    <i class="bi bi-shield-lock-fill"></i> OFFICIAL
+                                </button>
+                            {% elif data.is_blocked %}
+                                <button onclick="unblockUser('{{ data.user.id }}')" class="btn btn-danger w-100 status-badge" style="border-radius:16px; height:48px;">
+                                    Unblock User
+                                </button>
+                            {% elif data.is_friend %}
+                                <button onclick="unfriendUser('{{ data.user.id }}')" class="btn-unfriend w-100 d-flex align-items-center justify-content-center gap-1">
+                                    <i class="bi bi-person-check-fill"></i> FRIEND
+                                </button>
+                            {% elif data.sent_request %}
+                                <button onclick="cancelRequest('{{ data.user.id }}')" class="btn btn-warning w-100 text-white status-badge" style="border-radius:16px; height:48px;">
+                                    Pending...
+                                </button>
+                            {% elif data.received_request %}
+                                <a href="{% url 'notifications' %}" class="btn btn-success w-100 status-badge d-flex align-items-center justify-content-center" style="border-radius:16px; height:48px; text-decoration:none;">
+                                    Accept Request
+                                </a>
+                            {% else %}
+                                <button onclick="sendRequest('{{ data.user.id }}')" class="btn-main-add w-100">
+                                    Add Friend
+                                </button>
+                            {% endif %}
+                        </div>
+
+                        <a href="{% url 'chat_room' data.user.username %}" class="btn-action-circle" title="Chat">
+                            <i class="bi bi-chat-dots-fill fs-5 text-primary"></i>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% elif query %}
+            <div class="text-center mt-5 opacity-50">
+                <i class="bi bi-search-heart display-1"></i>
+                <p class="mt-3">No results found for "{{ query }}"</p>
+            </div>
+        {% else %}
+            <div class="text-center mt-5 opacity-50">
+                <i class="bi bi-people display-1"></i>
+                <p class="mt-3">Find your friends on ThuTalk</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+const getCSRF = () => '{{ csrf_token }}';
+
+async function performAction(url) {
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCSRF(),
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+        if (response.ok) {
+            location.reload();
+        } else {
+            alert("Action failed. Please try again.");
+        }
+    } catch (error) {
+        console.error("Error:", error);
+    }
+}
+
+function sendRequest(userId) { performAction(`/friend/request/${userId}/`); }
+function cancelRequest(userId) { performAction(`/friend/cancel/${userId}/`); }
+function unblockUser(userId) { performAction(`/unblock/${userId}/`); }
+function unfriendUser(userId) {
+    if(confirm("Remove this user from your friends?")) {
+        performAction(`/unfriend/${userId}/`);
+    }
+}
+</script>
+{% endblock %}
